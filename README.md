@@ -16,3 +16,5 @@ phần loop() : có thể thêm để check OTA định kỳ ;
     lastUpdateCheck = millis();
   }
 Lưu ý : hiện tại 2 file config và otaupdate vẫn chưa thể đi với nhau
+================================================================================================================================================================================================================
+tên video kham khảo : Upgrade Your ESP32 Over-the-Air (OTA) Using GitHub [Public Repo]
