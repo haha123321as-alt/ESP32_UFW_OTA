@@ -4,44 +4,17 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Update.h>
-#include <WiFiClientSecure.h> 
+#include <WiFiClientSecure.h>
 
 /* ==========================================================
    ⚙️  CẤU HÌNH
    ========================================================== */
-#define WIFI_SSID      "chandoi"
-#define WIFI_PASS      "bekhoai123456789"
 #define FIRMWARE_URL   "https://github.com/haha123321as-alt/ESP32_UFW_OTA/releases/download/LED_BLINK/Blink.ino.bin"
-#define VERSION_URL    "https://github.com/haha123321as-alt/ESP32_UFW_OTA/blob/main/version.json"
+#define VERSION_URL    "https://raw.githubusercontent.com/haha123321as-alt/ESP32_UFW_OTA/main/version.json"
 #define CURRENT_VERSION "1.0.0"
 #define UPDATE_INTERVAL  (5 * 60 * 1000UL) // Kiểm tra cập nhật mỗi 5 phút
 
-/* ==========================================================
-   ⚙️  BIẾN TOÀN CỤC
-   ========================================================== */
 unsigned long lastUpdateCheck = 0;
-
-/* ==========================================================
-   🔌 KẾT NỐI WIFI
-   ========================================================== */
-void connectWiFi() {
-  Serial.print("🔌 Kết nối WiFi ");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-
-  int retry = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    retry++;
-    if (retry > 40) {
-      Serial.println("\n⚠️ Không kết nối được WiFi!");
-      return;
-    }
-  }
-  Serial.println("\n✅ WiFi đã kết nối!");
-  Serial.println("🌐 IP: " + WiFi.localIP().toString());
-}
 
 /* ==========================================================
    📡 LẤY PHIÊN BẢN MỚI NHẤT TỪ GITHUB
@@ -95,7 +68,6 @@ bool startOTAUpdate(WiFiClient* client, int contentLength) {
       }
     }
 
-    // Timeout nếu không có dữ liệu trong 2 phút
     if (millis() - lastDataTime > timeoutDuration) {
       Serial.println("⏰ Timeout khi tải dữ liệu!");
       Update.abort();
@@ -119,8 +91,8 @@ bool startOTAUpdate(WiFiClient* client, int contentLength) {
    ========================================================== */
 void downloadAndApplyFirmware() {
   WiFiClientSecure client;
-  client.setInsecure(); // ⚠️ Chỉ dùng cho demo! (nếu cần bảo mật, nên dùng root CA)
-  
+  client.setInsecure(); // ⚠️ demo thôi, có thể thêm CA sau
+
   HTTPClient http;
   http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
   http.begin(client, FIRMWARE_URL);
@@ -182,8 +154,11 @@ void checkForFirmwareUpdate() {
    🚀 KHỞI TẠO OTA (GỌI TRONG setup())
    ========================================================== */
 void initOTA() {
-  connectWiFi();
-  checkForFirmwareUpdate();
+  if (WiFi.status() == WL_CONNECTED) {
+    checkForFirmwareUpdate();
+  } else {
+    Serial.println("⚠️ WiFi chưa kết nối, OTA bị bỏ qua.");
+  }
 }
 
 #endif
